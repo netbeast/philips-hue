@@ -3,6 +3,7 @@ var converter = require('../util/color-converter')
 
 var	express = require('express')
 var router = express.Router()
+var mqtt = require('mqtt')
 
 var bulbvalues = {power: 'on', brightness: 'bri', saturation: 'sat', hue: 'hue'}
 
@@ -77,6 +78,8 @@ loadResources(function (err, api) {
       })
       api.setLightState(req.params.id, req.body)
       .then(function (result) {
+        var client = mqtt.connect()
+        client.publish('lights', JSON.stringify(response))
         res.send(response)
       })
       .fail(function (err) {

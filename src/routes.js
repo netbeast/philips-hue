@@ -79,7 +79,7 @@ loadResources(function (err, api) {
       api.setLightState(req.params.id, req.body)
       .then(function (result) {
         var client = mqtt.connect()
-        client.publish('lights', JSON.stringify(response))
+        client.publish('netbeast/lights', JSON.stringify(response))
         res.send(response)
       })
       .fail(function (err) {

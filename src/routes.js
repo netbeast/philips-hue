@@ -8,7 +8,7 @@ var mqtt = require('mqtt')
 var bulbvalues = {power: 'on', brightness: 'bri', saturation: 'sat', hue: 'hue'}
 
 loadResources(function (err, api) {
-  if (err) throw err
+  if (err) return console.log(err)
 
   router.get('/hueLights/:id', function (req, res, next) {
     api.lightStatus(req.params.id, function (err, data) {
@@ -18,8 +18,8 @@ loadResources(function (err, api) {
       var response = {}
       Object.keys(req.query).forEach(function (key) {
         if (key === 'color') {
-          response['color'] = { hex: converter.hsv2Hex(data.state.hue, data.state.sat, data.state.bri),
-                             rgb: converter.hsv2Rgb(data.state.hue, data.state.sat, data.state.bri) }
+          response['color'] = { hex: converter.hsl2Hex(data.state.hue, data.state.sat, data.state.bri),
+                             rgb: converter.hsl2Rgb(data.state.hue, data.state.sat, data.state.bri) }
         }
         if (bulbvalues[key]) response[key] = _parseKeyGet(key, data.state[bulbvalues[key]])
       })
@@ -58,17 +58,17 @@ loadResources(function (err, api) {
           if (req.body.saturation) delete req.body.saturation
           if (req.body.brightness) delete req.body.brightness
           if (typeof (req.body.color) === 'string') {
-            var hsv = converter.hex2Hsv(req.body.color)
-            req.body['hue'] = response.hue = hsv[0].hue
-            req.body['sat'] = response.saturation = hsv[0].saturation
-            req.body['bri'] = response.brightness = hsv[0].brightness
+            var hsl = converter.hex2Hsl(req.body.color)
+            req.body['hue'] = response.hue = hsl[0].hue
+            req.body['sat'] = response.saturation = hsl[0].saturation
+            req.body['bri'] = response.brightness = hsl[0].brightness
             delete req.body.color
           } else if (typeof (req.body.color) === 'object') {
             if (req.body.color.r || req.body.color.g || req.body.color.b) {
-              var hsv = converter.rgb2Hsv(req.body.color.r, req.body.color.g, req.body.color.b)
-              req.body['hue'] = response.hue = hsv[0].hue
-              req.body['sat'] = response.saturation = hsv[0].saturation
-              req.body['bri'] = response.brightness = hsv[0].brightness
+              var hsl = converter.rgb2Hsl(req.body.color.r, req.body.color.g, req.body.color.b)
+              req.body['hue'] = response.hue = hsl[0].hue
+              req.body['sat'] = response.saturation = hsl[0].saturation
+              req.body['bri'] = response.brightness = hsl[0].brightness
               delete req.body.color
             } else {
               return res.status(400).send('Incorrect color format')
@@ -121,7 +121,6 @@ function _parseKeyPost (key, value) {
   return value
 }
 
-
 function _parsePhilips (data) {
   return {
     power: data.on,
@@ -130,6 +129,5 @@ function _parsePhilips (data) {
     brightness: Math.round(data.bri / 255 * 100)
   }
 }
-
 
 module.exports = router

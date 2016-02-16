@@ -10,7 +10,7 @@ module.exports = function (callback) {
     if (err) return callback(err, null)
 
     var objects = []
-    request.get(process.env.LOCAL_URL + '/api/resources?app=philips-hue',
+    request.get('http://' + process.env.NETBEAST + '/api/resources?app=philips-hue',
     function (err, resp, body) {
       if (err) return callback(err, null)
       if (!body || body === '[]') return callback()
@@ -39,7 +39,7 @@ module.exports = function (callback) {
           objects.splice(indx, 1)
         } else {
           //  Registra una dos acciones (get y set) por cada bombilla
-          request.post({url: process.env.LOCAL_URL + '/api/resources',
+          request.post({url: 'http://' + process.env.NETBEAST + '/api/resources',
           json: {
             app: 'philips-hue',
             location: 'none',
@@ -52,7 +52,7 @@ module.exports = function (callback) {
       })
       if (objects.length > 0) {
         objects.forEach(function (hooks) {
-          request.del(process.env.LOCAL_URL + '/api/resources?hook=' + hooks,
+          request.del('http://' + process.env.NETBEAST + '/api/resources?hook=' + hooks,
           callback)
         })
       }

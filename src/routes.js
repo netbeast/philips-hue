@@ -5,6 +5,8 @@ var	express = require('express')
 var router = express.Router()
 var mqtt = require('mqtt')
 
+console.log(process.env.NETBEAST)
+
 var bulbvalues = {power: 'on', brightness: 'bri', saturation: 'sat', hue: 'hue'}
 
 loadResources(function (err, api) {
@@ -48,9 +50,9 @@ loadResources(function (err, api) {
         if (!bulbvalues[key] && key !== 'color') {
           delete req.body[key]
         } else if (key !== 'color') {
-          req.body[bulbvalues[key]] = _parseKeyPost(key, req.body[key])
           response[key] = req.body[key]
-          delete req.body[key]
+          req.body[bulbvalues[key]] = _parseKeyPost(key, req.body[key])
+          if (key !== 'hue') delete req.body[key]
         } else {
           if (req.body.hue) delete req.body.hue
           if (req.body.sat) delete req.body.sat
@@ -58,17 +60,25 @@ loadResources(function (err, api) {
           if (req.body.saturation) delete req.body.saturation
           if (req.body.brightness) delete req.body.brightness
           if (typeof (req.body.color) === 'string') {
+            console.log(req.body.color)
             var hsl = converter.hex2Hsl(req.body.color)
-            req.body['hue'] = response.hue = hsl[0].hue
-            req.body['sat'] = response.saturation = hsl[0].saturation
-            req.body['bri'] = response.brightness = hsl[0].brightness
+            console.log(hsl)
+            req.body['hue'] = hsl[0].hue / 360 * 65535
+            req.body['sat'] = hsl[0].saturation / 100 * 255
+            req.body['bri'] = hsl[0].brightness / 100 * 255
+            response.hue = hsl[0].hue
+            response.saturation = hsl[0].saturation
+            response.brightness = hsl[0].brightness
             delete req.body.color
           } else if (typeof (req.body.color) === 'object') {
             if (req.body.color.r || req.body.color.g || req.body.color.b) {
               var hsl = converter.rgb2Hsl(req.body.color.r, req.body.color.g, req.body.color.b)
-              req.body['hue'] = response.hue = hsl[0].hue
-              req.body['sat'] = response.saturation = hsl[0].saturation
-              req.body['bri'] = response.brightness = hsl[0].brightness
+              req.body['hue'] = hsl[0].hue / 360 * 65535
+              req.body['sat'] = hsl[0].saturation / 100 * 255
+              req.body['bri'] = hsl[0].brightness / 100 * 255
+              response.hue = hsl[0].hue
+              response.saturation = hsl[0].saturation
+              response.brightness = hsl[0].brightness
               delete req.body.color
             } else {
               return res.status(400).send('Incorrect color format')
@@ -76,10 +86,12 @@ loadResources(function (err, api) {
           } else return res.status(400).send('Incorrect color format')
         }
       })
+      console.log(req.body)
+      console.log(response)
       api.setLightState(req.params.id, req.body)
       .then(function (result) {
         var client = mqtt.connect()
-        client.publish('netbeast/lights', JSON.stringify(response))
+        client.publish('lights', JSON.stringify(response))
         res.send(response)
       })
       .fail(function (err) {

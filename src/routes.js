@@ -10,7 +10,7 @@ console.log(process.env.NETBEAST)
 var bulbvalues = {power: 'on', brightness: 'bri', saturation: 'sat', hue: 'hue'}
 
 loadResources(function (err, api) {
-  if (err) return console.log(err)
+  if (err) return console.log(new Error(err))
 
   router.get('/hueLights/:id', function (req, res, next) {
     api.lightStatus(req.params.id, function (err, data) {

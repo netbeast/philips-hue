@@ -13,10 +13,12 @@ module.exports = function (callback) {
   async.waterfall([
     hue.nupnpSearch,
     function (result, callback) {
-      ipbridge = JSON.stringify(result[0].ipaddress)
-      ipbridge = ipbridge.split('"')[1]
-      console.log('Hue Bridges Found: ' + ipbridge)
-      callback.call(this, null)
+      if (result[0]) {
+        ipbridge = JSON.stringify(result[0].ipaddress)
+        ipbridge = ipbridge.split('"')[1]
+        console.log('Hue Bridges Found: ' + ipbridge)
+        callback.call(this, null)
+      } else callback(new Error('No Bridge found'))
     },
 
     function createUser (callback) {

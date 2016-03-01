@@ -14,9 +14,6 @@ module.exports = function (callback) {
     function (err, resp, body) {
       if (err) return callback(err, null)
       if (!body || body === '[]') return callback()
-
-      body = JSON.parse(body)
-
       if (body.length > 0) {
         body.forEach(function (device) {
           if (objects.indexOf(device.hook) < 0) objects.push(device.hook)

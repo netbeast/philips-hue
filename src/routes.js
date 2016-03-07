@@ -5,8 +5,6 @@ var	express = require('express')
 var router = express.Router()
 var mqtt = require('mqtt')
 
-console.log(process.env.NETBEAST)
-
 var bulbvalues = {power: 'on', brightness: 'bri', saturation: 'sat', hue: 'hue'}
 
 loadResources(function (err, api) {
@@ -60,9 +58,7 @@ loadResources(function (err, api) {
           if (req.body.saturation) delete req.body.saturation
           if (req.body.brightness) delete req.body.brightness
           if (typeof (req.body.color) === 'string') {
-            console.log(req.body.color)
             var hsl = converter.hex2Hsl(req.body.color)
-            console.log(hsl)
             req.body['hue'] = hsl[0].hue / 360 * 65535
             req.body['sat'] = hsl[0].saturation / 100 * 255
             req.body['bri'] = hsl[0].brightness / 100 * 255
@@ -86,8 +82,6 @@ loadResources(function (err, api) {
           } else return res.status(400).send('Incorrect color format')
         }
       })
-      console.log(req.body)
-      console.log(response)
       api.setLightState(req.params.id, req.body)
       .then(function (result) {
         var client = mqtt.connect()

@@ -67,7 +67,7 @@ loadResources(function (err, api) {
             response.brightness = hsl[0].brightness
             delete req.body.color
           } else if (typeof (req.body.color) === 'object') {
-            if (req.body.color.r || req.body.color.g || req.body.color.b) {
+            if ('r' in req.body.color || 'g' in req.body.color || 'b' in req.body.color) {
               var hsl = converter.rgb2Hsl(req.body.color.r, req.body.color.g, req.body.color.b)
               req.body['hue'] = hsl[0].hue / 360 * 65535
               req.body['sat'] = hsl[0].saturation / 100 * 255

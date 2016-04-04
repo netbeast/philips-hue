@@ -4,12 +4,15 @@ var converter = require('../util/color-converter')
 var	express = require('express')
 var router = express.Router()
 var mqtt = require('mqtt')
+var netbeast = require('netbeast')
 
 var bulbvalues = {power: 'on', brightness: 'bri', saturation: 'sat', hue: 'hue'}
 
 loadResources(function (err, api) {
-  if (err) return console.log(new Error(err))
-
+  if (err) {
+    console.trace(new Error(err))
+    netbeast().error(err, 'Something wrong!')
+  }
   router.get('/hueLights/:id', function (req, res, next) {
     api.lightStatus(req.params.id, function (err, data) {
       if (err) return res.status(404).send('Device not found')

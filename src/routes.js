@@ -13,6 +13,7 @@ loadResources(function (err, api) {
     console.trace(new Error(err))
     netbeast().error(err, 'Something wrong!')
   }
+  
   router.get('/hueLights/:id', function (req, res, next) {
     api.lightStatus(req.params.id, function (err, data) {
       if (err) return res.status(404).send('Device not found')
